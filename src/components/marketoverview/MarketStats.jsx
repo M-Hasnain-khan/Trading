@@ -83,38 +83,38 @@ export default function MarketStats({ market, marketData, isLoading, volumeRef }
       format: formatNumber,
       icon: Clock,
       color: "text-cyan-500",
-      suffix: ` ${market.split("/")[0]}`,
+      suffix: ` ${market?.split("/")[0] || ""}`,
     },
   ]
 
   return (
-    <div className="p-4">
-      <h3 className="text-sm font-medium mb-4">Market Stats</h3>
+    <div className="px-4 py-6 sm:px-6 md:px-8">
+      <h3 className="text-base font-medium mb-4 sm:mb-6 md:text-lg">Market Stats</h3>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-">
+      <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-4 md:gap-5">
         {stats.map((stat, index) => (
           <div
             key={index}
-            className="bg-gray-800/50 rounded-lg p-3 hover:bg-gray-800 transition-colors min-w-[60px] max-w-[100px]"
+            className="bg-gray-800/50 rounded-lg p-3 sm:p-4 hover:bg-gray-800 transition-colors w-full flex flex-col justify-between"
           >
-            <div className="flex items-center mb-2">
+            <div className="flex items-center mb-2 sm:mb-3">
               <div className={cn("p-1.5 rounded-full mr-2", `bg-${stat.color.split("-")[1]}-500/20`)}>
-                <stat.icon className={cn("h-4 w-4", stat.color)} />
+                <stat.icon className={cn("h-4 w-4 xs:h-5 xs:w-5 sm:h-6 sm:w-6", stat.color)} />
               </div>
-              <span className="text-xs text-gray-400 truncate">{stat.label}</span>
+              <span className="text-xs xs:text-sm sm:text-base text-gray-400 truncate">{stat.label}</span>
             </div>
 
-            <div className="text-sm font-medium overflow-hidden">
+            <div className="text-sm xs:text-base sm:text-lg font-medium overflow-hidden">
               {isLoading ? (
-                <div className="h-5 w-20 bg-gray-700 animate-pulse rounded"></div>
+                <div className="h-5 w-16 xs:w-20 sm:w-24 bg-gray-700 animate-pulse rounded"></div>
               ) : (
                 <span
                   ref={stat.ref}
-                  className="block text-ellipsis overflow-hidden whitespace-nowrap word-break"
+                  className="block text-ellipsis overflow-hidden whitespace-nowrap"
                 >
                   {stat.format(stat.value)}
                   {stat.suffix && (
-                    <span className="text-xs text-gray-400 ml-1">{stat.suffix}</span>
+                    <span className="text-xs xs:text-sm sm:text-base text-gray-400 ml-1">{stat.suffix}</span>
                   )}
                 </span>
               )}
@@ -122,15 +122,6 @@ export default function MarketStats({ market, marketData, isLoading, volumeRef }
           </div>
         ))}
       </div>
-
-      <style jsx>{`
-        .word-break {
-          word-break: break-word;
-        }
-        .text-ellipsis {
-          text-overflow: ellipsis;
-        }
-      `}</style>
     </div>
   )
 }

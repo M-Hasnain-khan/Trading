@@ -26,11 +26,13 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isDarkMode, setIsDarkMode] = useState(true)
   const [activeDropdown, setActiveDropdown] = useState(null)
+  const [dropdownOffsets, setDropdownOffsets] = useState({})
 
   // Refs for dropdown positioning
   const notificationsButtonRef = useRef(null)
   const userProfileButtonRef = useRef(null)
   const searchButtonRef = useRef(null)
+  const headerRef = useRef(null)
 
   const notificationsRef = useRef(null)
   const userProfileRef = useRef(null)
@@ -49,6 +51,33 @@ export default function Header() {
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
+
+  // Calculate dropdown offsets
+  useEffect(() => {
+    const updateOffsets = () => {
+      const headerRect = headerRef.current?.getBoundingClientRect()
+      if (!headerRect) return
+
+      const offsets = {}
+      if (searchButtonRef.current) {
+        const rect = searchButtonRef.current.getBoundingClientRect()
+        offsets.search = rect.left - headerRect.left
+      }
+      if (notificationsButtonRef.current) {
+        const rect = notificationsButtonRef.current.getBoundingClientRect()
+        offsets.notifications = rect.left - headerRect.left
+      }
+      if (userProfileButtonRef.current) {
+        const rect = userProfileButtonRef.current.getBoundingClientRect()
+        offsets.profile = rect.left - headerRect.left
+      }
+      setDropdownOffsets(offsets)
+    }
+
+    updateOffsets()
+    window.addEventListener("resize", updateOffsets)
+    return () => window.removeEventListener("resize", updateOffsets)
+  }, [activeDropdown])
 
   // Handle click outside to close dropdowns
   useEffect(() => {
@@ -86,7 +115,6 @@ export default function Header() {
   // Toggle theme
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode)
-    // In a real app, you would implement actual theme switching here
   }
 
   // Toggle dropdown
@@ -96,6 +124,7 @@ export default function Header() {
 
   return (
     <header
+      ref={headerRef}
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out h-16",
         isScrolled ? "bg-black/90 backdrop-blur-md border-b border-yellow-500/20" : "bg-black/50 backdrop-blur-sm",
@@ -123,7 +152,6 @@ export default function Header() {
                     variant="ghost"
                     className="text-sm group relative px-3 py-2 rounded-md"
                     onClick={(e) => {
-                      // Prevent default to avoid page jumps
                       e.preventDefault()
                     }}
                   >
@@ -133,14 +161,20 @@ export default function Header() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
-                  align="center"
-                  side="bottom" // Added to force dropdown below the button
+                  align="start"
+                  side="bottom"
                   sideOffset={8}
-                  className="bg-gray-900/95 backdrop-blur-sm border border-gray-800 text-white w-48 overflow-hidden shadow-lg shadow-black/20"
+                  className="bg-gray-900/95 backdrop-blur-sm border border-gray-800 text-white min-w-[180px] sm:min-w-[220px] md:min-w-[260px] max-w-[340px] shadow-lg shadow-black/20 rounded-md animate-dropdown mt-2 ml-0"
                 >
-                  <DropdownMenuItem className="hover:bg-gray-800 cursor-pointer">Option 1</DropdownMenuItem>
-                  <DropdownMenuItem className="hover:bg-gray-800 cursor-pointer">Option 2</DropdownMenuItem>
-                  <DropdownMenuItem className="hover:bg-gray-800 cursor-pointer">Option 3</DropdownMenuItem>
+                  <DropdownMenuItem className="hover:bg-gray-800 cursor-pointer transition-colors duration-150 animate-dropdown-item [--stagger:1]">
+                    {item} Option 1
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="hover:bg-gray-800 cursor-pointer transition-colors duration-150 animate-dropdown-item [--stagger:2]">
+                    {item} Option 2
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="hover:bg-gray-800 cursor-pointer transition-colors duration-150 animate-dropdown-item [--stagger:3]">
+                    {item} Option 3
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ))}
@@ -170,27 +204,27 @@ export default function Header() {
               {activeDropdown === "search" && (
                 <div
                   ref={searchRef}
-                  className="absolute right-0 top-full mt-2 w-80 bg-gray-900/95 backdrop-blur-sm border border-gray-800 rounded-md shadow-lg shadow-black/20 overflow-hidden animate-scale-in z-50"
+                  className="absolute right-0 top-full mt-2 w-[280px] bg-gray-900/95 backdrop-blur-sm border border-gray-800 rounded-md shadow-lg shadow-black/20 overflow-hidden animate-dropdown"
                 >
-                  <div className="p-3 ">
+                  <div className="p-3">
                     <div className="flex items-center bg-gray-800 rounded-md px-3 py-2">
-                      <Search className="h-4 w-4  text-gray-400" />
+                      <Search className="h-4 w-4 text-gray-400" />
                       <input
                         type="text"
                         placeholder="Search markets..."
                         className="bg-transparent border-none focus:outline-none text-white ml-2 w-full"
                       />
                     </div>
-                    <div className="mt-2 cursor-pointer">
+                    <div className="mt-2">
                       <h4 className="text-xs text-gray-500 uppercase font-semibold mb-1 px-2">Popular Searches</h4>
                       <div className="space-y-1">
-                        <div className="px-2 py-1 hover:bg-gray-800 rounded-md cursor-pointer flex items-center animate-fade-in stagger-1">
+                        <div className="px-2 py-1 hover:bg-gray-800 rounded-md cursor-pointer flex items-center transition-colors duration-150 animate-dropdown-item [--stagger:1]">
                           <span className="text-sm text-gray-300">BTC/USDT</span>
                         </div>
-                        <div className="px-2 py-1 hover:bg-gray-800 rounded-md cursor-pointer flex items-center animate-fade-in stagger-2">
+                        <div className="px-2 py-1 hover:bg-gray-800 rounded-md cursor-pointer flex items-center transition-colors duration-150 animate-dropdown-item [--stagger:2]">
                           <span className="text-sm text-gray-300">ETH/USDT</span>
                         </div>
-                        <div className="px-2 py-1 hover:bg-gray-800 rounded-md cursor-pointer flex items-center animate-fade-in stagger-3">
+                        <div className="px-2 py-1 hover:bg-gray-800 rounded-md cursor-pointer flex items-center transition-colors duration-150 animate-dropdown-item [--stagger:3]">
                           <span className="text-sm text-gray-300">SOL/USDT</span>
                         </div>
                       </div>
@@ -221,14 +255,14 @@ export default function Header() {
               {activeDropdown === "notifications" && (
                 <div
                   ref={notificationsRef}
-                  className="absolute right-0 top-full mt-2 w-80 cursor-pointer bg-gray-900/95 backdrop-blur-sm border border-gray-800 rounded-md shadow-lg shadow-black/20 overflow-hidden animate-scale-in z-50"
+                  className="absolute right-0 top-full mt-2 w-[280px] bg-gray-900/95 backdrop-blur-sm border border-gray-800 rounded-md shadow-lg shadow-black/20 overflow-hidden animate-dropdown"
                 >
                   <div className="p-2">
                     <h3 className="text-sm font-medium text-gray-300 px-2 py-1 border-b border-gray-800">
                       Notifications
                     </h3>
-                    <div className="mt-1 cursor-pointer max-h-60 overflow-y-auto">
-                      <div className="px-2 py-2 hover:bg-gray-800 rounded-md cursor-pointer border-b border-gray-800/50 animate-fade-in stagger-1">
+                    <div className="mt-1 max-h-60 overflow-y-auto">
+                      <div className="px-2 py-2 hover:bg-gray-800 rounded-md cursor-pointer border-b border-gray-800/50 transition-colors duration-150 animate-dropdown-item [--stagger:1]">
                         <div className="flex items-start">
                           <div className="flex-shrink-0 bg-green-500/20 p-1 rounded-full">
                             <Wallet className="h-4 w-4 text-green-500" />
@@ -240,7 +274,7 @@ export default function Header() {
                           </div>
                         </div>
                       </div>
-                      <div className="px-2 py-2 hover:bg-gray-800 rounded-md cursor-pointer border-b border-gray-800/50 animate-fade-in stagger-2">
+                      <div className="px-2 py-2 hover:bg-gray-800 rounded-md cursor-pointer border-b border-gray-800/50 transition-colors duration-150 animate-dropdown-item [--stagger:2]">
                         <div className="flex items-start">
                           <div className="flex-shrink-0 bg-blue-500/20 p-1 rounded-full">
                             <Bell className="h-4 w-4 text-blue-500" />
@@ -252,7 +286,7 @@ export default function Header() {
                           </div>
                         </div>
                       </div>
-                      <div className="px-2 py-2 hover:bg-gray-800 rounded-md cursor-pointer animate-fade-in stagger-3">
+                      <div className="px-2 py-2 hover:bg-gray-800 rounded-md cursor-pointer transition-colors duration-150 animate-dropdown-item [--stagger:3]">
                         <div className="flex items-start">
                           <div className="flex-shrink-0 bg-yellow-500/20 p-1 rounded-full">
                             <Settings className="h-4 w-4 text-yellow-500" />
@@ -293,45 +327,45 @@ export default function Header() {
               {activeDropdown === "profile" && (
                 <div
                   ref={userProfileRef}
-                  className="absolute right-0 top-full mt-2 w-56 bg-gray-900/95 backdrop-blur-sm border border-gray-800 rounded-md shadow-lg shadow-black/20 overflow-hidden animate-scale-in z-50"
+                  className="absolute right-0 top-full mt-2 w-[280px] bg-gray-900/95 backdrop-blur-sm border border-gray-800 rounded-md shadow-lg shadow-black/20 overflow-hidden animate-dropdown"
                 >
-                  <div className="p-2 cursor-pointer" >
+                  <div className="p-2">
                     <div className="px-3 py-2 border-b border-gray-800">
                       <p className="text-sm font-medium text-white">Guest User</p>
                       <p className="text-xs text-gray-400">guest@example.com</p>
                     </div>
-                    <div className="mt-1 cursor-pointer">
+                    <div className="mt-1">
                       <a
                         href="#"
-                        className="flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 rounded-md animate-fade-in stagger-1"
+                        className="flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 rounded-md transition-colors duration-150 animate-dropdown-item [--stagger:1]"
                       >
                         <User className="h-4 w-4 mr-2" />
                         Profile
                       </a>
                       <a
                         href="#"
-                        className="flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 rounded-md animate-fade-in stagger-2"
+                        className="flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 rounded-md transition-colors duration-150 animate-dropdown-item [--stagger:2]"
                       >
                         <Wallet className="h-4 w-4 mr-2" />
                         Wallet
                       </a>
                       <a
                         href="#"
-                        className="flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 rounded-md animate-fade-in stagger-3"
+                        className="flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 rounded-md transition-colors duration-150 animate-dropdown-item [--stagger:3]"
                       >
                         <Heart className="h-4 w-4 mr-2" />
                         Favorites
                       </a>
                       <a
                         href="#"
-                        className="flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 rounded-md animate-fade-in stagger-4"
+                        className="flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 rounded-md transition-colors duration-150 animate-dropdown-item [--stagger:4]"
                       >
                         <Settings className="h-4 w-4 mr-2" />
                         Settings
                       </a>
                       <a
                         href="#"
-                        className="flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 rounded-md animate-fade-in stagger-5"
+                        className="flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 rounded-md transition-colors duration-150 animate-dropdown-item [--stagger:5]"
                       >
                         <HelpCircle className="h-4 w-4 mr-2" />
                         Help Center
@@ -340,7 +374,7 @@ export default function Header() {
                     <div className="mt-1 pt-1 border-t border-gray-800">
                       <a
                         href="#"
-                        className="flex items-center px-3 py-2 text-sm text-red-400 hover:bg-gray-800 rounded-md"
+                        className="flex items-center px-3 py-2 text-sm text-red-400 hover:bg-gray-800 rounded-md transition-colors duration-150"
                       >
                         <LogOut className="h-4 w-4 mr-2" />
                         Sign Out
@@ -383,23 +417,41 @@ export default function Header() {
           "md:hidden transition-all duration-300 ease-in-out overflow-hidden fixed left-0 right-0 z-40 bg-gray-900 border-t border-gray-800",
           mobileMenuOpen ? "max-h-[calc(100vh-4rem)] opacity-100" : "max-h-0 opacity-0",
         )}
-        style={{ top: "64px" }} // Fixed position below header
+        style={{ top: "64px" }}
       >
         <div className="px-2 pt-2 pb-3 space-y-1 max-h-[calc(100vh-4rem)] overflow-y-auto">
           {["Markets", "Trade", "Derivatives", "Earn", "NFT", "Learn"].map((item) => (
-            <a
-              key={item}
-              href="#"
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-800 hover:text-white"
-              onClick={(e) => {
-                e.preventDefault() // Prevent default to avoid page jumps
-              }}
-            >
-              <div className="flex justify-between items-center">
+            <div key={item} className="border-b border-gray-800/50">
+              <button
+                className="w-full px-3 py-3 rounded-md text-base font-medium text-gray-300 hover:bg-gray-800 hover:text-white flex justify-between items-center"
+                onClick={(e) => {
+                  e.preventDefault()
+                }}
+              >
                 <span>{item}</span>
                 <ChevronDown className="h-4 w-4" />
+              </button>
+              <div className="px-3 py-1 space-y-1">
+                <a
+                  href="#"
+                  className="block px-3 py-2 text-sm text-gray-400 hover:bg-gray-800 hover:text-white rounded-md"
+                >
+                  {item} Option 1
+                </a>
+                <a
+                  href="#"
+                  className="block px-3 py-2 text-sm text-gray-400 hover:bg-gray-800 hover:text-white rounded-md"
+                >
+                  {item} Option 2
+                </a>
+                <a
+                  href="#"
+                  className="block px-3 py-2 text-sm text-gray-400 hover:bg-gray-800 hover:text-white rounded-md"
+                >
+                  {item} Option 3
+                </a>
               </div>
-            </a>
+            </div>
           ))}
           <div className="pt-4 pb-3 border-t border-gray-800">
             <div className="flex items-center justify-center space-x-4 mt-4">
@@ -416,6 +468,36 @@ export default function Header() {
           </div>
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes dropdown {
+          0% {
+            opacity: 0;
+            transform: translateY(-8px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes dropdown-item {
+          0% {
+            opacity: 0;
+            transform: translateY(4px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-dropdown {
+          animation: dropdown 120ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        .animate-dropdown-item {
+          animation: dropdown-item 120ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+          animation-delay: calc(var(--stagger) * 40ms);
+        }
+      `}</style>
     </header>
   )
 }
